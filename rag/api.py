@@ -90,9 +90,15 @@ INDEX_HTML = """<!DOCTYPE html>
           padding: 6px 10px; border-radius: 999px; cursor: pointer; }
   .chip:hover { border-color: #4a6fa5; }
   .answer { margin-top: 22px; background: #182338; border: 1px solid #2a3650;
-            border-radius: 12px; padding: 18px 20px; line-height: 1.55; white-space: pre-wrap;
+            border-radius: 12px; padding: 18px 20px; line-height: 1.55;
             display: none; }
   .answer.show { display: block; }
+  .answer ul { margin: 6px 0; padding-left: 20px; }
+  .answer li { margin: 3px 0; }
+  .answer strong { color: #fff; }
+  .answer code { background: #0f1623; border: 1px solid #2a3650; border-radius: 4px;
+                 padding: 1px 5px; font-size: 13px; }
+  .answer .ln { margin: 4px 0; }
   .src { margin-top: 12px; font-size: 12.5px; color: #8b97ad; }
   .foot { margin-top: 26px; font-size: 12px; color: #5e6b82; }
   a { color: #7fa6df; }
@@ -126,6 +132,27 @@ examples.forEach(t => {
 });
 const ansEl = document.getElementById("answer");
 const btn = document.getElementById("go");
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function renderMd(md) {
+  const lines = esc(md).split("\\n");
+  let html = "", inList = false;
+  for (let line of lines) {
+    line = line.replace(/\\*\\*(.+?)\\*\\*/g, "<strong>$1</strong>")
+               .replace(/`([^`]+)`/g, "<code>$1</code>");
+    const m = line.match(/^\\s*[\\*\\-]\\s+(.*)$/);
+    if (m) {
+      if (!inList) { html += "<ul>"; inList = true; }
+      html += "<li>" + m[1] + "</li>";
+    } else {
+      if (inList) { html += "</ul>"; inList = false; }
+      if (line.trim()) html += "<div class='ln'>" + line + "</div>";
+    }
+  }
+  if (inList) html += "</ul>";
+  return html;
+}
 async function ask() {
   const q = document.getElementById("q").value.trim();
   if (!q) return;
@@ -146,10 +173,7 @@ async function ask() {
         : "Запрос отклонён: " + (data.detail || "ошибка");
       return;
     }
-    ansEl.innerHTML = "";
-    const a = document.createElement("div");
-    a.textContent = data.answer || "Нет ответа.";
-    ansEl.appendChild(a);
+    ansEl.innerHTML = renderMd(data.answer || "Нет ответа.");
     if (data.sources && data.sources.length) {
       const s = document.createElement("div");
       s.className = "src";
