@@ -16,6 +16,10 @@ class Config:
     chunk_size: int = 900
     chunk_overlap: int = 150
     data_dir: str = "data"
+    rate_per_min: int = 5
+    rate_per_day: int = 40
+    global_per_day: int = 600
+    max_question_chars: int = 500
 
 
 def load_config() -> Config:
@@ -28,4 +32,8 @@ def load_config() -> Config:
         chunk_size=int(os.getenv("CHUNK_SIZE", "900")),
         chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "150")),
         data_dir=os.getenv("DATA_DIR", "data"),
+        rate_per_min=int(os.getenv("RATE_PER_MIN", "5")),
+        rate_per_day=int(os.getenv("RATE_PER_DAY", "40")),
+        global_per_day=int(os.getenv("GLOBAL_PER_DAY", "600")),
+        max_question_chars=int(os.getenv("MAX_QUESTION_CHARS", "500")),
     )

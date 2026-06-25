@@ -1,15 +1,24 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
 from .config import load_config
 from .ingest import ingest
 from .query import answer
+from .ratelimit import RateLimiter
 from .store import Store
 
 app = FastAPI(title="rag-service")
 cfg = load_config()
 store = Store(cfg)
+limiter = RateLimiter(cfg.rate_per_min, cfg.rate_per_day, cfg.global_per_day)
+
+
+def _client_ip(request: Request) -> str:
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 @app.on_event("startup")
@@ -43,8 +52,16 @@ def do_ingest():
 
 
 @app.post("/ask")
-def ask(req: AskRequest):
-    res = answer(req.question, cfg, store)
+def ask(req: AskRequest, request: Request):
+    question = req.question.strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="empty question")
+    if len(question) > cfg.max_question_chars:
+        raise HTTPException(status_code=400, detail="question too long")
+    reason = limiter.check(_client_ip(request))
+    if reason:
+        raise HTTPException(status_code=429, detail=reason)
+    res = answer(question, cfg, store)
     return {"answer": res["answer"], "sources": res["sources"]}
 
 
@@ -121,6 +138,14 @@ async function ask() {
       body: JSON.stringify({question: q})
     });
     const data = await r.json();
+    if (!r.ok) {
+      ansEl.textContent = data.detail === "too many requests, please slow down"
+        ? "Слишком много запросов — подождите минуту."
+        : (data.detail === "daily limit per visitor reached" || data.detail === "daily budget reached, try again tomorrow")
+        ? "Достигнут дневной лимит запросов. Загляните завтра."
+        : "Запрос отклонён: " + (data.detail || "ошибка");
+      return;
+    }
     ansEl.innerHTML = "";
     const a = document.createElement("div");
     a.textContent = data.answer || "Нет ответа.";
