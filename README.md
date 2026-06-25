@@ -1,4 +1,18 @@
+---
+title: RAG Portfolio Q&A
+emoji: 🔎
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # rag-service
+
+> Деплой на Hugging Face Space: задайте секрет `GEMINI_API_KEY` в настройках Space,
+> всё остальное (engine=gemini, Qdrant embedded, порт 7860) уже в `Dockerfile`.
+> Корпус индексируется автоматически при старте; главная страница `/` — чат для вопросов.
 
 RAG-движок, который отвечает на вопросы о профессиональном опыте по корпусу
 документации (проекты, навыки, стек) **с цитированием источников**. Демонстрируется

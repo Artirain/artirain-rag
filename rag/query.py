@@ -20,9 +20,9 @@ def build_context(hits):
     )
 
 
-def answer(question, cfg: Config = None):
+def answer(question, cfg: Config = None, store=None):
     cfg = cfg or Config()
-    store = Store(cfg)
+    store = store or Store(cfg)
     hits = store.search(question)
     if not hits:
         return {"answer": "В документации нет данных по этому вопросу.", "sources": []}

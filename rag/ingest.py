@@ -44,8 +44,8 @@ def collect_chunks(cfg: Config):
     return chunks
 
 
-def ingest(cfg: Config):
-    store = Store(cfg)
+def ingest(cfg: Config, store=None):
+    store = store or Store(cfg)
     store.reset()
     chunks = collect_chunks(cfg)
     n = store.upsert(chunks) if chunks else 0
