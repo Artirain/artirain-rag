@@ -21,7 +21,7 @@ class EmptyStore:
         return []
 
 
-def test_answer_builds_prompt_and_collects_sources(monkeypatch):
+def test_answer_returns_only_cited_sources_as_labels(monkeypatch):
     captured = {}
 
     def fake_call(prompt, engine="codex"):
@@ -34,10 +34,26 @@ def test_answer_builds_prompt_and_collects_sources(monkeypatch):
 
     res = query.answer("Какой стек?", Config(llm_engine="codex"))
 
-    assert res["sources"] == ["projects-ai.md", "skills.md"]
+    # only the cited source, mapped to a human-readable label
+    assert res["sources"] == ["Навыки"]
+    assert "[Навыки]" in res["answer"]
     assert "Какой стек?" in captured["prompt"]
     assert "Стек: Python, Qdrant." in captured["prompt"]
     assert captured["engine"] == "codex"
+
+
+def test_answer_ignores_uncited_and_hallucinated_sources(monkeypatch):
+    def fake_call(prompt, engine="codex"):
+        # cites one retrieved file and one that was never retrieved
+        return "Текст [projects-ai.md] и [nonexistent.md]."
+
+    monkeypatch.setattr(query, "Store", FakeStore)
+    monkeypatch.setattr(query, "call_llm", fake_call)
+
+    res = query.answer("вопрос", Config())
+
+    assert res["sources"] == ["AI-проекты"]  # skills.md not cited, fake file dropped
+    assert "[nonexistent.md]" in res["answer"]  # unknown citation left untouched
 
 
 def test_answer_empty_retrieval_skips_llm(monkeypatch):
