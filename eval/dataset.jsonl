@@ -1,0 +1,8 @@
+{"question": "Какой стек у tracking-movements?", "expected_source": "projects-ai.md", "keywords": ["OpenAI", "Kubernetes"]}
+{"question": "Делал ли кандидат RAG?", "expected_source": "projects-ai.md", "keywords": ["Qdrant", "retrieval"]}
+{"question": "Что за проект job-hunter и какая в нём LLM?", "expected_source": "projects-ai.md", "keywords": ["Codex", "ваканс"]}
+{"question": "Какие векторные базы знает кандидат?", "expected_source": "skills.md", "keywords": ["Qdrant"]}
+{"question": "Есть ли опыт с Kubernetes и CI/CD?", "expected_source": "skills.md", "keywords": ["Helm", "GitLab"]}
+{"question": "Что делает сервис трекинга посылок?", "expected_source": "projects-prod.md", "keywords": ["почтов"]}
+{"question": "Как кандидат относится к тестированию?", "expected_source": "about-me.md", "keywords": ["TDD", "pytest"]}
+{"question": "Какой проект про обработку платежей?", "expected_source": "projects-prod.md", "keywords": ["платеж"]}
